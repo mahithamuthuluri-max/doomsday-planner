@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doomsday Countdown — Full Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e12;--panel:#17171c;--line:#2b2b33;--red:#d7173a;--silver:#c9ccd3;--mute:#8d909a;--green:#3ddc84;--text:#ececf0;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.55 Inter,system-ui,sans-serif;overflow-x:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:28px 18px 80px}
+.px{font-family:'Press Start 2P',monospace}
+.eyebrow{font:400 9px 'Press Start 2P',monospace;color:var(--green);letter-spacing:.1em}
+h1{font:700 clamp(38px,8vw,68px)/1 'Cormorant Garamond',Georgia,serif;margin:12px 0 6px}h1 span{color:var(--red)}
+h2{font:700 30px 'Cormorant Garamond',serif;margin:0 0 14px}
+.sub{color:var(--silver);margin:0 0 20px}
+.cd{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 26px}
+.cell{background:rgba(23,23,28,.85);border:1px solid var(--line);border-top:2px solid var(--red);padding:10px 14px;text-align:center;min-width:64px}
+.cell b{display:block;font:400 clamp(16px,4vw,26px) 'Press Start 2P',monospace;text-shadow:0 0 14px rgba(215,23,58,.6)}
+.cell small{font:400 7px 'Press Start 2P',monospace;color:var(--mute)}
+.panel{background:rgba(23,23,28,.88);border:1px solid var(--line);padding:20px;margin-bottom:20px;backdrop-filter:blur(5px)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat b{display:block;font:400 18px 'Press Start 2P',monospace;color:var(--text);margin-top:6px}
+.stat span{font-size:12px;color:var(--mute)}
+.bar{height:12px;background:#222228;border:1px solid var(--line)}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--green));transition:width .4s}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+label.f{display:grid;gap:6px;font-size:12px;color:var(--silver)}
+input[type=number],input[type=date]{background:#101015;color:var(--text);border:1px solid var(--line);padding:10px 12px;font:inherit;width:150px}
+input:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.status{margin-top:14px;padding:12px 14px;border-left:3px solid var(--green);background:#13181500;color:var(--silver)}
+.status.warn{border-color:var(--red)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip,.btn{background:transparent;border:1px solid var(--line);color:var(--silver);padding:9px 14px;font:500 13px Inter,sans-serif;cursor:pointer;transition:.2s}
+.chip:hover,.btn:hover{border-color:var(--silver)}.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}.btn.pri:hover{box-shadow:0 0 20px rgba(215,23,58,.5)}
+.ch{margin:26px 0 10px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ch em{font:400 9px 'Press Start 2P',monospace;color:var(--green);font-style:normal}
+.ch h3{margin:0;font:700 24px 'Cormorant Garamond',serif}
+.item{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);padding:12px 16px;margin-bottom:8px;cursor:pointer;position:relative;transition:.2s}
+.item:hover{border-color:var(--red);transform:translateX(3px)}
+.item input{position:absolute;opacity:0}
+.box{width:22px;height:22px;border:2px solid var(--silver);flex:none;display:grid;place-items:center}
+.item input:checked+.box{background:var(--green);border-color:var(--green)}
+.item input:checked+.box::after{content:"";width:6px;height:11px;border:solid #07110b;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.item input:focus-visible+.box{outline:2px solid var(--red);outline-offset:3px}
+.meta{flex:1}.meta strong{display:block;font-weight:600}.meta span{font-size:12px;color:var(--mute)}
+.item input:checked~.meta strong{text-decoration:line-through;color:var(--mute)}
+.tag{font:400 8px 'Press Start 2P',monospace;color:var(--silver);border:1px solid var(--line);padding:6px 8px;white-space:nowrap}
+.tag.core{border-color:var(--red);color:var(--red)}
+.mission li{margin:6px 0;color:var(--silver)}
+.note{font-size:12px;color:var(--mute)}
+@media(max-width:560px){.tag.t{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{canvas,.noprint{display:none!important}body{background:#fff;color:#000}.panel,.item,.cell{background:#fff!important;border-color:#999!important;backdrop-filter:none}.item{break-inside:avoid;transform:none!important}.box{border-color:#000}.meta span,.note,.sub,.stat span,.cell small{color:#444}.cell b{text-shadow:none}h1 span,.eyebrow{color:#a00}.item input:checked+.box{background:#000}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+  <div class="eyebrow">Premium edition</div>
+  <h1>DOOMSDAY <span>PLANNER</span></h1>
+  <p class="sub">Your complete MCU watch plan for Avengers: Doomsday. Pick a pace, tick off titles and track your hours.</p>
+  <div class="cd"><div class="cell"><b id="d">--</b><small>DAYS</small></div><div class="cell"><b id="h">--</b><small>HRS</small></div><div class="cell"><b id="m">--</b><small>MIN</small></div><div class="cell"><b id="s">--</b><small>SEC</small></div></div>
+
+  <div class="panel">
+    <div class="stats">
+      <div class="stat"><span>Watched</span><b id="sDone">0/0</b></div>
+      <div class="stat"><span>Hours watched</span><b id="sHw">0</b></div>
+      <div class="stat"><span>Hours remaining</span><b id="sHr">0</b></div>
+      <div class="stat"><span>Complete</span><b id="sPct">0%</b></div>
+    </div>
+    <div class="bar"><i id="fill"></i></div>
+  </div>
+
+  <div class="panel">
+    <h2>Your viewing schedule</h2>
+    <div class="row">
+      <label class="f">Hours per week<input type="number" id="pace" min="1" max="60" step="0.5" value="10"></label>
+      <label class="f">Start date<input type="date" id="start"></label>
+      <label class="f">Weekly goal (titles)<input type="number" id="goal" min="1" max="20" value="3"></label>
+    </div>
+    <div class="status" id="status"></div>
+    <h2 style="margin-top:22px;font-size:24px">This week's missions</h2>
+    <ol class="mission" id="mission"></ol>
+    <p class="note" id="goalNote"></p>
+  </div>
+
+  <div class="chips noprint" id="chips"></div>
+  <div id="list"></div>
+  <div class="noprint" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:24px">
+    <button class="btn pri" id="print">Print planner</button>
+    <button class="btn" id="reset">Reset progress</button>
+  </div>
+  <p class="note" style="margin-top:20px">Runtimes are approximate and series are estimated totals, so check them before relying on exact schedules. "Core" marks our suggested Avengers path, not an official list. Release dates can change. Unofficial fan project, not affiliated with or endorsed by Marvel or Disney. Progress is saved on this device.</p>
+</div>
+
+<script>
+(function(){
+var T=new Date(2026,11,18).getTime(),DAY=86400000;
+// id,title,year,minutes,type(M/S),core,chapter
+var D=[
+['iron','Iron Man',2008,126,'M',1,1],['hulk','The Incredible Hulk',2008,112,'M',0,1],['im2','Iron Man 2',2010,124,'M',0,1],['thor','Thor',2011,115,'M',0,1],['cap1','Captain America: The First Avenger',2011,124,'M',1,1],['avg','The Avengers',2012,143,'M',1,1],
+['im3','Iron Man 3',2013,130,'M',0,2],['thor2','Thor: The Dark World',2013,112,'M',0,2],['tws','Captain America: The Winter Soldier',2014,136,'M',1,2],['gotg','Guardians of the Galaxy',2014,121,'M',0,2],['aou','Avengers: Age of Ultron',2015,141,'M',1,2],['ant','Ant-Man',2015,117,'M',0,2],
+['cw','Captain America: Civil War',2016,147,'M',1,3],['ds','Doctor Strange',2016,115,'M',0,3],['gotg2','Guardians of the Galaxy Vol. 2',2017,136,'M',0,3],['sm1','Spider-Man: Homecoming',2017,133,'M',0,3],['rag','Thor: Ragnarok',2017,130,'M',0,3],['bp','Black Panther',2018,134,'M',0,3],['iw','Avengers: Infinity War',2018,149,'M',1,3],['aw','Ant-Man and the Wasp',2018,118,'M',0,3],['cm','Captain Marvel',2019,123,'M',0,3],['eg','Avengers: Endgame',2019,181,'M',1,3],['sm2','Spider-Man: Far From Home',2019,129,'M',0,3],
+['wv','WandaVision',2021,330,'S',0,4],['loki','Loki, season 1',2021,270,'S',0,4],['sc','Shang-Chi and the Legend of the Ten Rings',2021,132,'M',0,4],['nwh','Spider-Man: No Way Home',2021,148,'M',1,4],['mom','Doctor Strange in the Multiverse of Madness',2022,126,'M',1,4],['wf','Black Panther: Wakanda Forever',2022,161,'M',0,4],['g3','Guardians of the Galaxy Vol. 3',2023,150,'M',0,4],['dw','Deadpool & Wolverine',2024,128,'M',0,4],['f4','The Fantastic Four: First Steps',2025,115,'M',1,4]
+];
+var CH={1:['Chapter 01','The first assembly'],2:['Chapter 02','The saga widens'],3:['Chapter 03','The Infinity war'],4:['Chapter 04','The multiverse unfolds']};
+var S={done:{},pace:10,goal:3,start:'',f:'all'};
+try{var r=JSON.parse(localStorage.getItem('dc_full')||'null');if(r)for(var k in r)S[k]=r[k]}catch(e){}
+function save(){try{localStorage.setItem('dc_full',JSON.stringify(S))}catch(e){}}
+var $=function(i){return document.getElementById(i)},pad=function(n,l){n=String(n);while(n.length<l)n='0'+n;return n};
+function fmt(m){return (m/60).toFixed(1)+'h'}
+function fd(t){return new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+var iso=function(t){var d=new Date(t);return d.getFullYear()+'-'+pad(d.getMonth()+1,2)+'-'+pad(d.getDate(),2)};
+if(!S.start)S.start=iso(Date.now());
+$('pace').value=S.pace;$('goal').value=S.goal;$('start').value=S.start;
+
+function tick(){var s=Math.max(0,Math.floor((T-Date.now())/1000));$('d').textContent=pad(Math.floor(s/86400),3);$('h').textContent=pad(Math.floor(s%86400/3600),2);$('m').textContent=pad(Math.floor(s%3600/60),2);$('s').textContent=pad(s%60,2)}
+tick();setInterval(tick,1000);
+
+var F=[['all','All titles'],['core','Core path'],['M','Movies'],['S','Series']];
+function vis(x){return S.f=='all'||(S.f=='core'&&x[5])||S.f==x[4]}
+function chips(){var c=$('chips');c.innerHTML='';F.forEach(function(f){var b=document.createElement('button');b.className='chip'+(S.f==f[0]?' on':'');b.textContent=f[1];b.onclick=function(){S.f=f[0];save();render()};c.appendChild(b)})}
+
+function render(){
+ chips();var L=$('list');L.innerHTML='';var cur=0;
+ D.filter(vis).forEach(function(x){
+  if(x[6]!=cur){cur=x[6];var h=document.createElement('div');h.className='ch';h.innerHTML='<em></em><h3></h3>';h.firstChild.textContent=CH[cur][0];h.lastChild.textContent=CH[cur][1];L.appendChild(h)}
+  var l=document.createElement('label');l.className='item';
+  l.innerHTML='<input type="checkbox"><span class="box"></span><div class="meta"><strong></strong><span></span></div><span class="tag t"></span><span class="tag core" style="display:none">CORE</span>';
+  var cb=l.querySelector('input');cb.checked=!!S.done[x[0]];
+  l.querySelector('strong').textContent=x[1];
+  l.querySelector('.meta span').textContent=x[2]+' · '+(x[4]=='S'?'Series':'Film')+' · ~'+fmt(x[3]);
+  l.querySelector('.tag.t').textContent=fmt(x[3]);
+  if(x[5])l.querySelector('.core').style.display='';
+  cb.onchange=function(){S.done[x[0]]=cb.checked;save();stats()};
+  L.appendChild(l)});
+ stats()}
+
+function stats(){
+ var P=D.filter(vis),n=0,hw=0,hr=0;
+ P.forEach(function(x){if(S.done[x[0]]){n++;hw+=x[3]}else hr+=x[3]});
+ $('sDone').textContent=n+'/'+P.length;$('sHw').textContent=(hw/60).toFixed(1);$('sHr').textContent=(hr/60).toFixed(1);
+ var p=P.length?Math.round(n/P.length*100):0;$('sPct').textContent=p+'%';$('fill').style.width=p+'%';
+ // schedule
+ var st=new Date(S.start+'T00:00:00').getTime();if(isNaN(st))st=Date.now();
+ var base=Math.max(st,new Date().setHours(0,0,0,0));
+ var weeks=hr/60/Math.max(S.pace,1),fin=base+Math.ceil(weeks*7)*DAY,left=Math.ceil((T-base)/DAY);
+ var el=$('status');
+ if(!hr){el.className='status';el.textContent='Mission complete: everything in this view is watched. You are ready.'}
+ else{
+  var need=left>0?hr/60/(left/7):0,ok=fin<=T;
+  el.className='status'+(ok?'':' warn');
+  el.textContent='At '+S.pace+' hours a week you will finish around '+fd(fin)+', '+(ok?'in time for release on 18 Dec 2026.':'after the 18 Dec 2026 release.')+(left>0?' To finish by release you need about '+need.toFixed(1)+' hours a week.':'')}
+ // missions
+ var cap=S.pace*60,tot=0,ms=$('mission');ms.innerHTML='';var cnt=0;
+ P.filter(function(x){return !S.done[x[0]]}).some(function(x){
+  if(cnt>=S.goal||(cnt>0&&tot+x[3]>cap))return true;
+  tot+=x[3];cnt++;var li=document.createElement('li');li.textContent=x[1]+' ('+x[2]+') · ~'+fmt(x[3]);ms.appendChild(li);return false});
+ $('goalNote').textContent=cnt?'Up next: '+cnt+' title'+(cnt>1?'s':'')+', about '+fmt(tot)+' of your '+S.pace+'h budget.':'';
+}
+[['pace','pace'],['goal','goal'],['start','start']].forEach(function(a){$(a[0]).addEventListener('input',function(){var v=this.value;S[a[1]]=a[0]=='start'?v:(parseFloat(v)||1);save();stats()})});
+$('print').onclick=function(){window.print()};
+$('reset').onclick=function(){if(confirm('Reset all progress?')){S.done={};save();render()}};
+render();
+
+// pixel background
+var c=$('fx'),x=c.getContext('2d'),W,H,st=[],rd=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function sz(){W=c.width=innerWidth;H=c.height=innerHeight;st=[];for(var i=0;i<70;i++)st.push({x:Math.random()*W,y:Math.random()*H,p:Math.random()*6,s:Math.random()<.2?3:2})}
+sz();addEventListener('resize',sz);
+function fr(t){x.clearRect(0,0,W,H);st.forEach(function(s){x.fillStyle='rgba(201,204,211,'+(.25+.3*Math.sin(t/700+s.p))+')';x.fillRect(s.x|0,s.y|0,s.s,s.s)});
+ var cx=W*.85,cy=130,R=Math.min(W,H)*.16;
+ for(var r=0;r<3;r++){x.strokeStyle=r%2?'rgba(61,220,132,.18)':'rgba(215,23,58,.28)';x.lineWidth=4;x.beginPath();
+  for(var k=0;k<36;k++){var a=k/36*6.283+t/(2400+r*600)*(r%2?-1:1),rad=R-r*R*.2;x.rect(Math.round((cx+Math.cos(a)*rad)/4)*4,Math.round((cy+Math.sin(a)*rad)/4)*4,4,4)}x.stroke()}
+ if(!rd)requestAnimationFrame(fr)}
+requestAnimationFrame(fr);
+})();
+</script>
+</body>
+</html>
